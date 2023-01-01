@@ -162,6 +162,18 @@ class RecipesDataBase:
 
         return selected_recipes
 
+    def getIngredients(self, recipe_indices):
+        ingredients = []
+
+        for recipe_index in recipe_indices:
+            recipe_ingredients = self.data_base.loc[recipe_index]["ingredients"]
+            recipe_ingredients = stringToList(recipe_ingredients)
+            for ingredient in recipe_ingredients:
+                ingredients.append(ingredient)
+
+        return ingredients
+
+
 recipe_data_base = RecipesDataBase()
 ingredients = ["bread", "spaghetti"]
 recipe_data_base.add("Tosti", "https://url.test", ingredients, "spring", 10, "Dutch")
@@ -170,10 +182,17 @@ recipe_data_base.removeDuplicates()
 print("\n get full database\n")
 print(recipe_data_base.getDataBase())
 
-print("get unique database")
-print(recipe_data_base.getUniqueRecipes(5))
+print("\nget unique database")
+unique_recipes =recipe_data_base.getUniqueRecipes(5)
+print(unique_recipes)
 
+print("\ningredients of unique recipes")
+ingredients = recipe_data_base.getIngredients(unique_recipes.index)
+print(ingredients)
 
-
+# todo: get ingredients with appropriate amounts of all recipes and make sure they are added
+# todo: print all selected recipes, urls etc
+# todo: save which recipes are going to be cooked
+# todo: count how many times the recipes were cooked before and add a cost
 
 recipe_data_base.saveToCSV()
