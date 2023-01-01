@@ -1,0 +1,12 @@
+title,url_or_bookpage,ingredients,season,time,type_of_kitchen
+Spaghetti,https://url.test,"['salt', 'spaghetti']",winter,30,Dutch
+Pasta,https://url.test,"['salt', 'spaghetti']",winter,30,Mexican
+Bolognese,https://url.test,"['aubergine', 'kurkuma']",winter,30,Mexican
+Bapao,https://url.test,"['pepper', 'tofu']",winter,15,Indonesian
+Wraps,https://url.test,"['hummus', 'meatballs']",winter,45,Indonesian
+Bread,https://url.test,"['cheese', 'meatballs']",winter,45,Belgian
+Tosti,https://url.test,"['bread', 'mozerella']",winter,10,German
+Tosti,https://url.test,"['bread', 'spaghetti']",winter,10,German
+Tosti,https://url.test,"['bread', 'spaghetti']",winter,10,Dutch
+Tosti,https://url.test,"['bread', 'spaghetti']",spring,10,Dutch
+Tosti,https://url.test,"['bread', 'spaghetti']",spring,10,Dutch
