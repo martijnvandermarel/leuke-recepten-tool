@@ -3,8 +3,16 @@ from hashable_df import hashable_df
 from os.path import exists
 from datetime import datetime
 import numpy as np
+import random
 
-# todo: similarity score!
+time_weight = 10.0
+ingredient_weight = 30.0
+type_of_kitchen_weight = 20.0
+season_weight = 20.0
+url_weight = 100.0
+
+def getUrlScore(url1, url2):
+    return (url1 is url2)
 
 def getTimeScore(time1, time2):
     try:
@@ -59,38 +67,44 @@ def getIngredientScore(ingredients1, ingredients2):
 
     return (percentage_the_same/10.0)
 
-def getSeasonScore(season):
+def isInSeason(season):
     month = datetime.now().month
-    if (season == "winter"):
+    
+    winter_list = ["winter", "Winter"]
+    if (season in winter_list):
         return (month < 3 or month == 12)
-    if (season == "spring"):
+
+    spring_list = ["spring", "Sprint", "lente", "Lente"]
+    if (season in spring_list):
         return (month > 2 and month < 6)
-    if (season == "summer"):
+
+    summer_list = ["Summer", "summer", "Zomer", "zomer"]
+    if (season in summer_list):
         return (month > 5 and month < 9)
-    if (season == "autum"):
+
+    autum_list = ["Autum", "autum", "Herfst", "herfst"]
+    if (season in autum_list):
         return (month > 8 and month < 12)
+
     else:
         print("invalid season " + season)
-        # Check for capitals
         return True
 
+def getSeasonScore(season):
+    if isInSeason(season):
+        return 0.0
+    return 10.0*season_weight
+
 def getSimilarityScore(recipe1, recipe2):
-    # season_score = getSeasonScore(recipe1["season"])
     time_score = getTimeScore(recipe1["time"],  recipe2["time"])
     ingredient_score = getIngredientScore(recipe1["ingredients"], recipe2["ingredients"])
     type_of_kitchen_score = getTypeOfKitchenScore(recipe1["type_of_kitchen"], recipe2["type_of_kitchen"])
+    # url_score = getUrlScore(recipe1["url_or_bookpage"], recipe2["url_or_bookpage"])
+    url_score = 0.0
 
-    # season_weight = 40
-    time_weight = 10
-    ingredient_weight = 30
-    type_of_kitchen_weight = 20
-
-    total_score = time_weight * time_score + ingredient_weight * ingredient_score + type_of_kitchen_score * type_of_kitchen_score
+    total_score = time_weight * time_score + ingredient_weight * ingredient_score + type_of_kitchen_score * type_of_kitchen_score + url_weight * url_score
 
     return total_score
-
-    # todo: implement this after the proper data base is there
-    # return recipe1["url_or_bookpage"] == recipe2["url_or_bookpage"] 
 
 class RecipesDataBase:
     data_base = pd.DataFrame([])
@@ -116,11 +130,12 @@ class RecipesDataBase:
     def getUniqueRecipes(self, number_of_recipes):
         print("Get unique recipes")
         selected_recipes = pd.DataFrame() 
-        selected_recipes = selected_recipes.append(self.data_base.loc[0])
-        # todo: in the future we want to get a random selection and therefore we don't want to
-        # initialize based on the first one, but maybe on the one that was cooked already the least
+        first_recipe_idx = random.randrange(self.data_base.index[0], self.data_base.index[-1], 1)
+        selected_recipes = selected_recipes.append(self.data_base.loc[first_recipe_idx])
 
-        similarity_scores = {}
+        # todo: take into account what was already cooked
+
+        recipe_scores = {}
         while (len(selected_recipes) < number_of_recipes):
             already_selected_idx = selected_recipes.index[-1]
            
@@ -128,24 +143,24 @@ class RecipesDataBase:
                 already_selected_recipe = selected_recipes.loc[already_selected_idx]
 
                 if recipe_idx in selected_recipes.index:
-                    similarity_scores[recipe_idx] = float('inf')
+                    recipe_scores[recipe_idx] = float('inf')
                     continue
 
-                score = getSimilarityScore(self.data_base.loc[recipe_idx], selected_recipes.loc[already_selected_idx])
+                similarity_score = getSimilarityScore(self.data_base.loc[recipe_idx], selected_recipes.loc[already_selected_idx])
+                season_score = getSeasonScore(self.data_base.loc[recipe_idx]["season"])
+                total_score = similarity_score + season_score
 
-                if (recipe_idx in similarity_scores):
-                    similarity_scores[recipe_idx] = score + similarity_scores[recipe_idx]
+                if (recipe_idx in recipe_scores):
+                    recipe_scores[recipe_idx] = total_score + recipe_scores[recipe_idx]
                 else:
-                    similarity_scores[recipe_idx] = score
+                    recipe_scores[recipe_idx] = total_score
             
-            sorted_scores = sorted(similarity_scores.items(), key=lambda kv:(kv[1], kv[0]))
+            sorted_scores = sorted(recipe_scores.items(), key=lambda kv:(kv[1], kv[0]))
             least_similar_recipe = self.data_base.loc[sorted_scores[0][0]]
             
             selected_recipes = selected_recipes.append(least_similar_recipe)
 
         return selected_recipes
-
-
 
 recipe_data_base = RecipesDataBase()
 ingredients = ["bread", "spaghetti"]
